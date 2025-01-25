@@ -82,15 +82,7 @@ function Sidebar() {
           </li>
           */}
           <li className="nav-header">Users</li>
-          <li className="nav-item">
-        <NavLink to="user/manage-user-list" className="nav-link">
-          <i className="nav-icon far fa-calendar-alt"></i>
-          <p>
-            Manage User List
-            <span className="badge badge-info right">2</span>
-          </p>
-        </NavLink>
-      </li>
+
       <li className="nav-item">
         <NavLink to="/user/manage-vendor-list" className="nav-link">
           <i className="nav-icon far fa-calendar-alt"></i>

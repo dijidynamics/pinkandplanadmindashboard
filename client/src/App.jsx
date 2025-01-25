@@ -3,7 +3,7 @@ import Header from '../components/Header'
 import Footer from '../components/Footer'
 import Sidebar from '../components/Sidebar'
 import Home from '../components/Home'
-import Manageuserlist from "../user/manageuserlist";
+
 import Managevendorlist from "../user/Managevendorlist";
 import Addnewvendor from "../user/Addnewvendor";
 
@@ -20,7 +20,6 @@ function App() {
         <div className="content">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/manage-user-list" element={<Manageuserlist />} />
             <Route path="/user/manage-vendor-list" element={<Managevendorlist />} />
             <Route path="/user/add-new-vendor" element={<Addnewvendor />} />
           </Routes>
