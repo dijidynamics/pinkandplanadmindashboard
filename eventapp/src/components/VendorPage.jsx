@@ -21,11 +21,9 @@ function VendorPage() {
           <tr>
             <th>Vendor Name</th>
             <th>Email</th>
+            <th>Password</th>
             <th>Phone</th>
             <th>SSM Company Reg No.</th>
-            <th>Address</th>
-            <th>City</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -33,21 +31,18 @@ function VendorPage() {
             <tr key={vendor._id}>
               <td>{vendor.vendorname}</td>
               <td>{vendor.vendoremail}</td>
+              <td>{vendor.vendorpassword}</td>
               <td>{vendor.vendorphone}</td>
               <td>{vendor.vendorssmno}</td>
-              <td>
-                {vendor.vendoraddress.street}, {vendor.vendoraddress.state}, {vendor.vendoraddress.city},
-                {vendor.vendoraddress.country} - {vendor.vendoraddress.zipcode}
-              </td>
-              <td>{vendor.vendoraddress.city}</td>
-              <td>
+           {/*   <td>
                 <Button variant="primary" size="sm" className="me-2">
                   <FaEdit /> Edit
                 </Button>
                 <Button variant="danger" size="sm">
+                
                   <FaTrashAlt /> Delete
                 </Button>
-              </td>
+              </td> */}
             </tr>
           ))}
         </tbody>
