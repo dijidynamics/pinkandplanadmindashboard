@@ -5,7 +5,7 @@ import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 function VendorPage() {
   const [vendors, setVendors] = useState([]);
 
-  // Fetch vendors data from the API
+  // Fetch vendors data from the 
   useEffect(() => {
     fetch('http://147.93.96.202:4001/vendors')
       .then((response) => response.json())
@@ -39,7 +39,7 @@ function VendorPage() {
                   <FaEdit /> Edit
                 </Button>
                 <Button variant="danger" size="sm">
-                
+
                   <FaTrashAlt /> Delete
                 </Button>
               </td> */}
