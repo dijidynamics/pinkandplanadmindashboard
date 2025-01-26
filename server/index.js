@@ -10,13 +10,7 @@ const vendorSchema = new mongoose.Schema({
     vendorpassword: { type: String, required: true },
     vendorphone: { type: String, required: true },
     vendorssmno: { type: String, required: true }, // Add this line
-    vendoraddress: {
-        street: { type: String, required: true },
-        city: { type: String, required: true },
-        state: { type: String, required: true },
-        country: { type: String, required: true },
-        zipcode: { type: String, required: true }
-    }
+   
 });
 
 // Create the model once
@@ -57,13 +51,8 @@ app.post("/addvendor", (req, res) => {
         vendorname: { type: String, required: true },
         vendorpassword: { type: String, required: true },
         vendorphone: { type: String, required: true },
-        vendoraddress: {
-            street: { type: String, required: true },
-            city: { type: String, required: true },
-            state: { type: String, required: true },
-            country: { type: String, required: true },
-            zipcode: { type: String, required: true }
-        }
+        vendorssmno: { type: String, required: true }
+        
     }));
 
     const newVendor = new VendorCollectionModel({
@@ -93,22 +82,15 @@ const VendorCollectionModel = mongoose.model('vendorlistmy1', vendorSchema);
 
 // Route to insert data into the vendor collection
 app.post("/addnewvendor", (req, res) => {
-    const { vendoremail, vendorname, vendorpassword, vendorphone, vendoraddress, vendorssmno } = req.body;
-    const { street, city, state, country, zipcode } = vendoraddress;
+    const { vendoremail, vendorname, vendorpassword, vendorphone, vendorssmno } = req.body;
+
 
     const newVendor = new VendorCollectionModel({
         vendoremail,
         vendorname,
         vendorphone,
         vendorpassword,
-        vendorssmno,
-        vendoraddress: {
-            street,
-            city,
-            state,
-            country,
-            zipcode
-        }
+        vendorssmno      
     });
 
     newVendor.save()
@@ -119,6 +101,8 @@ app.post("/addnewvendor", (req, res) => {
             res.status(500).json({ error: err.message });
         });
 });
+
+
 // Define the GET route to fetch vendor data
 app.get('/vendors', async (req, res) => {
     try {

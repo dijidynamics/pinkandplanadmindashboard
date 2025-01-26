@@ -36,7 +36,7 @@ function VendorPage() {
               <td>{vendor.vendorphone}</td>
               <td>{vendor.vendorssmno}</td>
               <td>
-                {vendor.vendoraddress.street}, {vendor.vendoraddress.state}, {vendor.vendoraddress.city},{' '}
+                {vendor.vendoraddress.street}, {vendor.vendoraddress.state}, {vendor.vendoraddress.city},
                 {vendor.vendoraddress.country} - {vendor.vendoraddress.zipcode}
               </td>
               <td>{vendor.vendoraddress.city}</td>
