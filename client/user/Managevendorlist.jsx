@@ -5,7 +5,7 @@ function Managevendorlist() {
 
   // Fetch vendors data from the API
   useEffect(() => {
-    fetch('http://localhost:4001/vendors')
+    fetch('http://147.93.96.202:4001/vendors')
       .then((response) => response.json())
       .then((data) => setVendors(data))
       .catch((error) => console.error('Error fetching vendors:', error));
