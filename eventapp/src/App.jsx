@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import VendorPage from './components/VendorPage';
 import HomePage from './components/HomePage';
+import Singupvendor from './components/Singupvendor';
+
 
 function App() {
   return (
@@ -16,6 +18,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/vendors" element={<VendorPage />} />
+            <Route path="/addnewvendor" element={<Singupvendor />} />
             {/* You can add more routes here for different pages */}
           </Routes>
         </div>

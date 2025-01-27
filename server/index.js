@@ -9,12 +9,14 @@ const vendorSchema = new mongoose.Schema({
     vendorname: { type: String, required: true },
     vendorpassword: { type: String, required: true },
     vendorphone: { type: String, required: true },
-    vendorssmno: { type: String, required: true }, // Add this line
-   
+    vendorssmno: { type: String, required: true }, // Add this line   
 });
 
 // Create the model once
 const VendorCollModel = mongoose.model('vendorlistmy1', vendorSchema);
+
+
+
 
 // Connect to MongoDB
 const mongoURI = "mongodb+srv://dijidynamics2024:1Password**12345!@evmdb.8l73c.mongodb.net/pandp?retryWrites=true&w=majority&appName=evmdb";
@@ -113,6 +115,30 @@ app.get('/vendors', async (req, res) => {
         res.status(500).json({ message: 'Error fetching vendors', error: err });
     }
 });
+
+
+// Define the schema for the vendor collection
+const categorySchema = new mongoose.Schema({
+    categoryid: { type: String, required: true },
+    categoryname: { type: String, required: true }
+}, { strict: false });
+
+// Create the model once
+const CategoryCollModel = mongoose.model('pandpcategorylist', categorySchema, 'pandpcategorylist');
+
+// Define the GET route to fetch vendor data
+
+app.get('/categorylist', async (req, res) => {
+    try {
+        const categorylist = await CategoryCollModel.find();
+        res.json(categorylist)
+    } catch (err)
+    {
+        console.err('error fetching error', err);
+        res.status(500).json({message: 'Error fetching vendors',  error: err})
+    }
+})
+
 
 // Start the server
 app.listen(4001, () => {
