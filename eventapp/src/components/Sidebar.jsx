@@ -16,6 +16,9 @@ function Sidebar() {
         <Link to="/addnewvendor" className="nav-link text-white">
           <FaListAlt /> Add New Vendor
         </Link>
+        <Link to="/categorylist" className="nav-link text-white">
+          <FaListAlt /> Category List
+        </Link>
         {/* Add more links for other pages */}
       </nav>
     </div>

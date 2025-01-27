@@ -4,6 +4,7 @@ import Sidebar from './components/Sidebar';
 import VendorPage from './components/VendorPage';
 import HomePage from './components/HomePage';
 import Singupvendor from './components/Singupvendor';
+import Categorylist from './components/Categorylist';
 
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/vendors" element={<VendorPage />} />
             <Route path="/addnewvendor" element={<Singupvendor />} />
+            <Route path="/categorylist" element={<Categorylist />} />
             {/* You can add more routes here for different pages */}
           </Routes>
         </div>
