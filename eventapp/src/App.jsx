@@ -5,6 +5,7 @@ import VendorPage from './components/VendorPage';
 import HomePage from './components/HomePage';
 import Singupvendor from './components/Singupvendor';
 import Categorylist from './components/Categorylist';
+import Signpage from './components/Signpage';
 
 
 function App() {
@@ -17,7 +18,8 @@ function App() {
         {/* Main Content Area */}
         <div className="container-fluid p-4">
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path='/' element={<Signpage />} />
+            <Route path="/Home" element={<HomePage />} />
             <Route path="/vendors" element={<VendorPage />} />
             <Route path="/addnewvendor" element={<Singupvendor />} />
             <Route path="/categorylist" element={<Categorylist />} />

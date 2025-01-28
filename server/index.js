@@ -15,6 +15,20 @@ const vendorSchema = new mongoose.Schema({
 // Create the model once
 const VendorCollModel = mongoose.model('vendorlistmy1', vendorSchema);
 
+// Define the schema for the events collection
+const eventsSchema = new mongoose.Schema({
+    vendoremail: { type: String, required: true },
+    serviceddetails: { type: String, required: true },
+    serviceprice: { type: String, required: true },
+    notes: { type: String, required: true },
+    serviceimage: { type: String, required: true }, // Add this line   
+    totallikes: { type: String, required: true },
+    categoryid: { type: String, required: true }, // Add this line  
+});
+
+
+// Create the model once
+const EventsCollModel = mongoose.model('eventdetails', eventsSchema);
 
 
 
@@ -39,6 +53,69 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+
+// Route to insert data into a new collection
+app.post("/addownevent", (req, res) => {
+ 
+    const { vendoremail } = req.body;
+    const { serviceddetails } = req.body;
+    const { serviceprice } = req.body;
+    const { notes } = req.body;
+    const { serviceimage } = req.body;
+    const { totallikes } = req.body;
+    const { categoryid } = req.body;
+
+        // Create a new model for a new collection dynamically
+        const EventsCollectionModel = mongoose.model('eventdetails', mongoose.Schema({
+            vendoremail: { type: String, required: true },
+            serviceddetails: { type: String, required: true },
+            serviceprice: { type: String, required: true },
+            notes: { type: String, required: true },
+            serviceimage: { type: String, required: true },
+            totallikes: { type: String, required: true },
+            categoryid: { type: String, required: true }
+        }));
+
+
+        const newEvents = new EventsCollectionModel({
+            vendoremail: vendoremail,
+            serviceddetails: serviceddetails,
+            serviceprice: serviceprice,
+            notes: notes,
+            serviceimage: serviceimage,
+            totallikes: totallikes,
+            categoryid: categoryid,
+        });
+ 
+
+        newEvents.save()
+        .then(Events => {
+            res.status(201).json({ message: 'Vendor added to new collection successfully', Events });
+        })
+        .catch(err => {
+            res.status(500).json({ error: err.message });
+        });
+
+})
+
+
+
+// Define the GET route to fetch Events data
+app.get('/getevents', async (req, res) => {
+    try {
+        const events = await EventsCollModel.find();
+        res.json(events);
+    } catch (err) {
+        console.error('Error fetching events:', err);
+        res.status(500).json({ message: 'Error fetching vendors', error: err });
+    }
+});
+
+
+
+
+
 // Route to insert data into a new collection
 app.post("/addvendor", (req, res) => {
     const { vendoremail } = req.body;
@@ -47,6 +124,7 @@ app.post("/addvendor", (req, res) => {
     const { vendorphone } = req.body;
     const { vendoraddress } = req.body; 
     const { street, city, state, country, zipcode } = vendoraddress; 
+
     // Create a new model for a new collection dynamically
     const VendorCollectionModel = mongoose.model('vendorlistmy1', mongoose.Schema({
         vendoremail: { type: String, required: true },
