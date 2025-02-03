@@ -247,7 +247,7 @@ app.get('/customeruserlist', async (req, res) => {
       console.log("Fetched Data:", customerUserList); // Debugging log
       res.json(customerUserList);
     } catch (err) {
-      console.error('Error fetching customer users:', err);
+      console.error('Error fetching customer test users:', err);
       res.status(500).json({ message: 'Error fetching Customers', error: err });
     }
   });
