@@ -31,6 +31,16 @@ const eventsSchema = new mongoose.Schema({
 const EventsCollModel = mongoose.model('eventdetails', eventsSchema);
 
 
+const customerUserListSchema = new mongoose.Schema({
+  customeruseremail: { type: String, required: true, unique: true },
+  customerusername: { type: String, required: true },
+  customeruserpassword: { type: String, required: true }, // Hash this in production
+  status: { type: String, required: true }, // Can be "active", "inactive", etc.
+  createdAt: { type: Date, default: Date.now,  required: true},
+  updatedAt: { type: Date, default: Date.now, required: true},
+})
+
+const CustomerUserModel = mongoose.model("customeruserlists", customerUserListSchema);
 
 // Connect to MongoDB
 const mongoURI = "mongodb+srv://dijidynamics2024:1Password**12345!@evmdb.8l73c.mongodb.net/pandp?retryWrites=true&w=majority&appName=evmdb";
@@ -48,6 +58,40 @@ mongoose.connection.on('error', (err) => {
 mongoose.connection.on('disconnected', () => {
     console.log('Mongoose is disconnected from the database.');
 });
+
+{/* 
+mongoose.connection.on('connected', async () => {
+    console.log('Mongoose is connected to the database.');
+
+  
+    const count = await CustomerUserModel.countDocuments();
+    if (count === 0) {
+        console.log('No data found, inserting test data...');
+        
+
+        await CustomerUserModel.insertMany([
+            {
+                customeruseremail: "test@example.com",
+                customerusername: "Test User",
+                customeruserpassword: "hashedpassword123", 
+                status: "active",
+                createdAt: new Date(),
+                updatedAt: new Date()
+            },
+            {
+                customeruseremail: "user2@example.com",
+                customerusername: "User Two",
+                customeruserpassword: "hashedpassword456",
+                status: "active",
+                createdAt: new Date(),
+                updatedAt: new Date()
+            }
+        ]);
+
+        console.log('Test data inserted successfully.');
+    }
+});
+*/}
 
 const app = express();
 app.use(cors());
@@ -111,6 +155,8 @@ app.get('/getevents', async (req, res) => {
         res.status(500).json({ message: 'Error fetching vendors', error: err });
     }
 });
+
+
 
 
 
@@ -193,6 +239,66 @@ app.get('/vendors', async (req, res) => {
         res.status(500).json({ message: 'Error fetching vendors', error: err });
     }
 });
+
+// Define the GET route to fetch vendor data
+app.get('/customeruserlist', async (req, res) => {
+    try {
+      const customerUserList = await CustomerUserModel.find();
+      console.log("Fetched Data:", customerUserList); // Debugging log
+      res.json(customerUserList);
+    } catch (err) {
+      console.error('Error fetching customer users:', err);
+      res.status(500).json({ message: 'Error fetching Customers', error: err });
+    }
+  });
+  
+  // Define the Add new Customer emailid
+
+  app.post('/addcustomer', async (req, res) => {
+    const { customeruseremail, customerusername, customeruserpassword, status, createdAt, updatedAt } = req.body;
+  
+    try {
+      // Optional: Hash the password before saving (use bcrypt or any hashing algorithm)
+      // const hashedPassword = bcrypt.hashSync(customeruserpassword, 10);
+      
+      const newCustomer = new CustomerUserModel({
+        customeruseremail,
+        customerusername,
+        customeruserpassword,  // Replace with hashedPassword if you hash it
+        status,
+        createdAt,
+        updatedAt,
+      });
+  
+      await newCustomer.save();
+      res.status(201).json({ message: 'Customer signed up successfully', customer: newCustomer });
+    } catch (error) {
+      console.error('Error signing up customer:', error);
+      res.status(500).json({ message: 'Error signing up customer', error });
+    }
+  });
+  
+
+  app.post("/customersignup", async (req, res) => {
+    try {
+      const { customeruseremail, customerusername, customeruserpassword, status, createdAt, updatedAt } = req.body;
+      
+      const newCustomerUser = new CustomerUserModel({
+        customeruseremail,
+        customerusername,
+        customeruserpassword,
+        status,
+        createdAt: new Date(createdAt), // Convert string to Date object
+        updatedAt: new Date(updatedAt), // Convert string to Date object
+      });
+  
+      await newCustomerUser.save();
+      res.status(201).json({ message: 'Customer created successfully' });
+    } catch (err) {
+      res.status(500).json({ message: 'Error creating customer', error: err });
+    }
+  });
+  
 
 
 // Define the schema for the vendor collection
