@@ -304,14 +304,16 @@ app.get('/customeruserlist', async (req, res) => {
 // Define the schema for the vendor collection
 const categorySchema = new mongoose.Schema({
     categoryid: { type: String, required: true },
-    categoryname: { type: String, required: true }
+    categoryname: { type: String, required: true },
+    image: { type: String, required: true }  // Add this line
 }, { strict: false });
 
 // Create the model once
 const CategoryCollModel = mongoose.model('pandpcategorylist', categorySchema, 'pandpcategorylist');
 
-// Define the GET route to fetch vendor data
 
+
+// Define the GET route to fetch vendor data
 app.get('/categorylist', async (req, res) => {
     try {
         const categorylist = await CategoryCollModel.find();

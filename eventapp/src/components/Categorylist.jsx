@@ -21,6 +21,7 @@ function Categorylist() {
           <tr>
             <th>Category ID</th>
             <th>Category Name</th>
+            <th>Image</th>
           </tr>
         </thead>
         <tbody>
@@ -28,6 +29,22 @@ function Categorylist() {
             <tr key={category._id}>
               <td>{category.categoryid}</td>
               <td>{category.categoryname}</td>
+              <td>
+              <img
+          src={category.image} 
+          alt={category.categoryname} 
+          style={{ height: "100px", width: "auto" }} 
+        /> </td>
+             <td>
+        <Button variant="primary" size="sm" className="me-2">
+          <FaEdit /> Edit
+        </Button>
+        <Button variant="danger" size="sm">
+          <FaTrashAlt /> Delete
+        </Button>
+      </td> 
+
+
            {/*   <td>
                 <Button variant="primary" size="sm" className="me-2">
                   <FaEdit /> Edit
