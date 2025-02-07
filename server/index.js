@@ -2,6 +2,10 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+//image upload file
+const multer = require('multer');
+const path = require('path');
+
 
 // Define the schema for the vendor collection
 const vendorSchema = new mongoose.Schema({
@@ -97,7 +101,51 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
 
+// Define storage for uploaded images
+// Multer Storage Configuration
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Save images in "uploads" folder
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+    }
+});
+
+
+
+
+// Set up static folder to serve files from the 'uploads' directory
+const upload = multer({ storage });
+
+// API to Create or Update Category with Image Upload
+app.post('/categorylist', upload.single('image'), async (req, res) => {
+    try {
+        const { categoryid, categoryname } = req.body;
+        const imagePath = req.file ? `/uploads/${req.file.filename}` : '';
+
+        // Check if the category already exists
+        let category = await CategoryCollModel.findOne({ categoryid });
+
+        if (category) {
+            // Update existing category
+            category.categoryname = categoryname;
+            if (req.file) category.image = imagePath;
+
+            await category.save();
+            return res.status(200).json({ message: 'Category updated', category });
+        } else {
+            // Create new category
+            const newCategory = new CategoryCollModel({ categoryid, categoryname, image: imagePath });
+            await newCategory.save();
+            return res.status(201).json({ message: 'Category created', category: newCategory });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Error saving category' });
+    }
+});
 
 // Route to insert data into a new collection
 app.post("/addownevent", (req, res) => {
@@ -324,6 +372,60 @@ app.get('/categorylist', async (req, res) => {
         res.status(500).json({message: 'Error fetching vendors',  error: err})
     }
 })
+
+
+// Define the schema for the vendor collection
+const dbuserlistSchema = new mongoose.Schema({
+    dbusername: { type: String, required: true },
+    dbpassword: { type: String, required: true },
+    dbstatus: { type: String, required: true },
+    role: { type: String, required: true }, // Add this line
+    ssm:  { type: String, required: true } // Add this line
+});
+
+
+// Create the model once
+const DBuserCollModel = mongoose.model('userlist', dbuserlistSchema, 'userlist');
+// Define the GET route to fetch vendor data
+app.get('/dbuserlist', async (req, res) => {
+    try {
+        const dbuserlist = await DBuserCollModel.find();
+        res.json(dbuserlist)
+    } catch (err)
+    {
+        console.err('error fetching error', err);
+        res.status(500).json({message: 'Error fetching vendors',  error: err})
+    }
+})
+
+
+// Login Route (without JWT)
+app.post('/dbuser', async (req, res) => {
+    const { dbusername, dbpassword } = req.body;
+
+    try {
+        const user = await DBuserCollModel.findOne({ dbusername });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Check if the password matches
+        if (user.dbpassword !== dbpassword) {
+            return res.status(401).json({ message: "Invalid password" });
+        }
+
+         // Log the role value to check it's being fetched
+       console.log('User role:', user.role); // <-- This will show the role in your server log
+        // Return user details without JWT
+        res.json({ message: "Login successful", dbusername: user.dbusername,   role: user.role });
+
+
+    } catch (err) {
+        console.error('Error logging in:', err);
+        res.status(500).json({ message: 'Server error', error: err });
+    }
+});
 
 
 // Start the server

@@ -1,64 +1,44 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Button } from 'react-bootstrap';
+import { Card, Button, Container, Row, Col } from 'react-bootstrap';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 
 function Categorylist() {
   const [categorylist, setCategorylist] = useState([]);
 
-  // Fetch vendors data from the 
   useEffect(() => {
     fetch('http://147.93.96.202:4001/categorylist')
       .then((response) => response.json())
       .then((data) => setCategorylist(data))
-      .catch((error) => console.error('Error fetching vendors:', error));
+      .catch((error) => console.error('Error fetching categories:', error));
   }, []);
 
   return (
-    <div>
-      <h3>Category List</h3>
-      <Table bordered responsive>
-        <thead>
-          <tr>
-            <th>Category ID</th>
-            <th>Category Name</th>
-            <th>Image</th>
-          </tr>
-        </thead>
-        <tbody>
-          {categorylist.map((category) => (
-            <tr key={category._id}>
-              <td>{category.categoryid}</td>
-              <td>{category.categoryname}</td>
-              <td>
-              <img
-          src={category.image} 
-          alt={category.categoryname} 
-          style={{ height: "100px", width: "auto" }} 
-        /> </td>
-             <td>
-        <Button variant="primary" size="sm" className="me-2">
-          <FaEdit /> Edit
-        </Button>
-        <Button variant="danger" size="sm">
-          <FaTrashAlt /> Delete
-        </Button>
-      </td> 
-
-
-           {/*   <td>
+    <Container className="mt-4">
+      <h3 className="text-center mb-4">Category List</h3>
+      <Row>
+        {categorylist.map((category) => (
+          <Col key={category._id} md={4} sm={6} xs={12} className="mb-4">
+            <Card className="shadow-sm" style={{ borderRadius: '10px' }}>
+              <Card.Img 
+                variant="top" 
+                src={category.image} 
+                alt={category.categoryname} 
+                style={{ height: '200px', objectFit: 'cover', borderTopLeftRadius: '10px', borderTopRightRadius: '10px' }}
+              />
+            {/*  <Card.Body className="text-center">
+                <Card.Title>{category.categoryname}</Card.Title>
                 <Button variant="primary" size="sm" className="me-2">
                   <FaEdit /> Edit
                 </Button>
                 <Button variant="danger" size="sm">
-
                   <FaTrashAlt /> Delete
                 </Button>
-              </td> */}
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-    </div>
+              </Card.Body>*/} 
+            </Card>
+          </Col>
+        ))}
+      </Row>
+    </Container>
   );
 }
 
