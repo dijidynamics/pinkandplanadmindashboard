@@ -31,7 +31,7 @@ const Admincategorylist = () => {
                         <Card className="shadow-sm" style={{ borderRadius: '10px' }}>
                             <Card.Img 
                                 variant="top" 
-                                src={`http://localhost:4001${category.image}`} 
+                                src={`http://147.93.96.202:4001${category.image}`} 
                                 alt={category.categoryname} 
                                 style={{ height: '200px', objectFit: 'cover', borderTopLeftRadius: '10px', borderTopRightRadius: '10px' }}
                             />

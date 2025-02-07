@@ -25,17 +25,19 @@ const EditCategoryModal = ({ show, handleClose, category, refreshCategories }) =
         formData.append('categoryid', categoryId);
         formData.append('categoryname', categoryName);
         if (image) formData.append('image', image);
-
+    
         try {
-            await axios.post('http://localhost:4001/categorylist', formData, {
+            const response = await axios.post('http://147.93.96.202:4001/categorylist', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
+            console.log('Response:', response.data); // Log success response
             refreshCategories();
             handleClose();
         } catch (error) {
-            console.error('Error updating category:', error);
+            console.error('Error updating category:', error.response ? error.response.data : error.message);
         }
     };
+    
 
     return (
         <Modal show={show} onHide={handleClose} backdrop="static" keyboard={false}>
