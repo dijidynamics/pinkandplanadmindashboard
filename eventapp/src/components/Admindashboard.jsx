@@ -10,6 +10,7 @@ function Admindashboard() {
     <div style={{width:'100%', backgroundColor:'#f4f4f4', padding:'10px'}}>
    <h6>Welcome, {username ? username : "Guest"}</h6> {/* Display username */}
     </div>
+    
   )
 }
 

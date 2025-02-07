@@ -15,7 +15,7 @@ const Admincategorylist = () => {
 
     const fetchCategories = async () => {
         try {
-            const response = await axios.get('http://localhost:4001/categorylist');
+            const response = await axios.get('http://147.93.96.202:4001/categorylist');
             setCategoryList(response.data);
         } catch (error) {
             console.error('Error fetching categories:', error);

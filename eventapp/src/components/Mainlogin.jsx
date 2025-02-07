@@ -18,7 +18,7 @@ function Mainlogin() {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://localhost:4001/dbuser', { dbusername, dbpassword });
+      const response = await axios.post('http://147.93.96.202:4001/dbuser', { dbusername, dbpassword });
       alert(response.data.message);
   
       // Store username and role in sessionStorage

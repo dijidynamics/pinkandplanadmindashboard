@@ -114,9 +114,6 @@ const storage = multer.diskStorage({
     }
 });
 
-
-
-
 // Set up static folder to serve files from the 'uploads' directory
 const upload = multer({ storage });
 
