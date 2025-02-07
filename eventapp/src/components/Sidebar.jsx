@@ -49,7 +49,7 @@ function Sidebar() {
               <FaListAlt /> Vendor & User List
             </Link>
             <Link to="/addnewvendor" className="nav-link text-white">
-              <FaListAlt /> Add New Vendor
+              <FaListAlt /> Add New User
             </Link>
             <Link to="/Admincategorylist" className="nav-link text-white">
               <FaListAlt /> Category List
