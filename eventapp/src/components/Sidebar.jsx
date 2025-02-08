@@ -48,9 +48,9 @@ function Sidebar() {
             <Link to="/vendors" className="nav-link text-white">
               <FaListAlt /> Vendor & User List
             </Link>
-            <Link to="/addnewvendor" className="nav-link text-white">
+           {/* <Link to="/addnewvendor" className="nav-link text-white">
               <FaListAlt /> Add New User
-            </Link>
+            </Link>*/}  
             <Link to="/Admincategorylist" className="nav-link text-white">
               <FaListAlt /> Category List
             </Link>
