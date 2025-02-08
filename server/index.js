@@ -203,10 +203,6 @@ app.get('/getevents', async (req, res) => {
 
 
 
-
-
-
-
 // Route to insert data into a new collection
 app.post("/addvendor", (req, res) => {
     const { vendoremail } = req.body;
@@ -371,19 +367,23 @@ app.get('/categorylist', async (req, res) => {
 })
 
 
-// Define the schema for the vendor collection
+// Define the schema for the user collection
 const dbuserlistSchema = new mongoose.Schema({
     dbusername: { type: String, required: true },
     dbpassword: { type: String, required: true },
     dbstatus: { type: String, required: true },
-    role: { type: String, required: true }, // Add this line
-    ssm:  { type: String, required: true } // Add this line
+    nameofuser: { type: String, required: true },
+    role: { type: String, required: true },
+    ssm: { 
+        type: String,
+        required: function() { return this.role === "vendor"; }  // Required only for vendors
+    }
 });
 
 
-// Create the model once
+// Create the user model once
 const DBuserCollModel = mongoose.model('userlist', dbuserlistSchema, 'userlist');
-// Define the GET route to fetch vendor data
+// Define the GET route to fetch user data
 app.get('/dbuserlist', async (req, res) => {
     try {
         const dbuserlist = await DBuserCollModel.find();
@@ -395,6 +395,40 @@ app.get('/dbuserlist', async (req, res) => {
     }
 })
 
+// **POST API - Create a new user**
+app.post('/pdbuserlist', async (req, res) => {
+    try {
+        const { dbusername, dbpassword, dbstatus, role, ssm, nameofuser } = req.body;
+
+        // Basic validation
+        if (!dbusername || !dbpassword || !dbstatus || !role || !nameofuser) {
+            return res.status(400).json({ message: "All required fields must be filled" });
+        }
+
+        // If role is "vendor", ensure SSM is provided
+        if (role === "vendor" && !ssm) {
+            return res.status(400).json({ message: "SSM is required for vendors" });
+        }
+
+        // Create new user
+        const newUser = new DBuserCollModel({
+            dbusername,
+            dbpassword,
+            dbstatus,
+            nameofuser,
+            role,
+            ssm: role === "vendor" ? ssm : "" // Store SSM only for vendors
+        });
+
+        // Save to database
+        await newUser.save();
+        res.status(201).json({ message: "User created successfully", user: newUser });
+
+    } catch (err) {
+        console.error('Error creating user', err);
+        res.status(500).json({ message: 'Error creating user', error: err });
+    }
+});
 
 // Login Route (without JWT)
 app.post('/dbuser', async (req, res) => {
