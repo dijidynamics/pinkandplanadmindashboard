@@ -34,7 +34,7 @@ function Mainlogin() {
           navigate('/Vendordashboard');
           break;
         case 'admin':
-          navigate('/addnewvendor'); // Change this to the correct admin page
+          navigate('/Admindashboard'); // Change this to the correct admin page
           break;
         default:
           navigate('/categorylist');

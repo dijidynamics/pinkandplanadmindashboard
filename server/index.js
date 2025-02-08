@@ -430,6 +430,42 @@ app.post('/pdbuserlist', async (req, res) => {
     }
 });
 
+
+//update user details
+app.put('/updateuser/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { dbusername, dbpassword, dbstatus, role, ssm, nameofuser } = req.body;
+
+        if (!dbusername || !dbpassword || !dbstatus || !role || !nameofuser) {
+            return res.status(400).json({ message: "All required fields must be filled" });
+        }
+
+        // Ensure SSM is provided if the user is a vendor
+        if (role === "vendor" && !ssm) {
+            return res.status(400).json({ message: "SSM is required for vendors" });
+        }
+
+        // Update the user in the database
+        const updatedUser = await DBuserCollModel.findByIdAndUpdate(
+            id,
+            { dbusername, dbpassword, dbstatus, role, nameofuser, ssm: role === "vendor" ? ssm : "" },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({ message: "User updated successfully", user: updatedUser });
+    } catch (err) {
+        console.error('Error updating user:', err);
+        res.status(500).json({ message: 'Error updating user', error: err });
+    }
+});
+
+
+
 // Login Route (without JWT)
 app.post('/dbuser', async (req, res) => {
     const { dbusername, dbpassword } = req.body;
