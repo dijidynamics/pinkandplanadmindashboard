@@ -54,7 +54,9 @@ function Sidebar() {
             <Link to="/Admincategorylist" className="nav-link text-white">
               <FaListAlt /> Category List
             </Link>
-            
+            <Link to="/AddServices" className="nav-link text-white">
+              <FaListAlt /> Add New Services
+            </Link>
           
           </>
         )}

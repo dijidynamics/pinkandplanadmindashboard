@@ -1,11 +1,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-
 //image upload file
 const multer = require('multer');
 const path = require('path');
 
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
 
 // Define the schema for the vendor collection
 const vendorSchema = new mongoose.Schema({
@@ -97,11 +101,7 @@ mongoose.connection.on('connected', async () => {
 });
 */}
 
-const app = express();
-app.use(cors());
-app.use(express.json());
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); 
 
 // Define storage for uploaded images
 // Multer Storage Configuration
@@ -117,20 +117,47 @@ const storage = multer.diskStorage({
 // Set up static folder to serve files from the 'uploads' directory
 const upload = multer({ storage });
 
+
+//api to upload addservice 
+app.post("/addservice", upload.array("serviceimage", 3), async (req, res) => {
+    try {
+        const { serviceuser_id, servicenameofuser, servicetitle, servicedescription, servicepricelist } = req.body;
+
+        if (!serviceuser_id || !servicenameofuser || !servicetitle || !servicedescription || !servicepricelist) {
+            return res.status(400).json({ error: "All fields are required" });
+        }
+
+        // Construct image URLs
+        const serviceimage = req.files.map(file => `http://147.93.96.202:4001/uploads/${file.filename}`);
+
+        const newService = new DBserviceCollModel({
+            serviceuser_id,
+            servicenameofuser,
+            servicetitle,
+            servicedescription,
+            servicepricelist,
+            serviceimage,
+        });
+
+        await newService.save();
+        res.status(201).json(newService);
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
+
+
 // API to Create or Update Category with Image Upload
 app.post('/categorylist', upload.single('image'), async (req, res) => {
     try {
         const { categoryid, categoryname } = req.body;
         const imagePath = req.file ? `/uploads/${req.file.filename}` : '';
-
         // Check if the category already exists
         let category = await CategoryCollModel.findOne({ categoryid });
-
         if (category) {
             // Update existing category
             category.categoryname = categoryname;
             if (req.file) category.image = imagePath;
-
             await category.save();
             return res.status(200).json({ message: 'Category updated', category });
         } else {
@@ -143,6 +170,7 @@ app.post('/categorylist', upload.single('image'), async (req, res) => {
         res.status(500).json({ error: 'Error saving category' });
     }
 });
+
 
 // Route to insert data into a new collection
 app.post("/addownevent", (req, res) => {
@@ -380,9 +408,66 @@ const dbuserlistSchema = new mongoose.Schema({
     }
 });
 
+//define the schema for the service collection
+const dbservieSchema = new mongoose.Schema({
+    serviceuser_id: { type: String, required: true },
+    servicenameofuser: { type: String, required: true },
+    servicetitle: { type: String, required: true },
+    servicedescription: { type: String, required: true },
+    servicepricelist: { type: String, required: true },
+    serviceimage: { type: [String], required: true }, // Array of image URLs
+});
+
+// Create the user model once for service
+const DBserviceCollModel = mongoose.model('serviceslist', dbservieSchema, 'serviceslist');
+
+
+// Add a New Service - Using `app.post()`
+app.post("/addservice", async (req, res) => {
+    try {
+      const { serviceuser_id, servicenameofuser, servicetitle, servicedescription, servicepricelist, serviceimage } = req.body;
+  
+      if (!serviceuser_id || !servicenameofuser || !servicetitle || !servicedescription || !servicepricelist || !serviceimage) {
+        return res.status(400).json({ error: "All fields are required" });
+      }
+  
+      const newService = new DBserviceCollModel({
+        serviceuser_id,
+        servicenameofuser,
+        servicetitle,
+        servicedescription,
+        servicepricelist,
+        serviceimage: Array.isArray(serviceimage) ? serviceimage : serviceimage.split(","), // Convert string to array if needed
+      });
+  
+      await newService.save();
+      res.status(201).json(newService);
+    } catch (error) {
+      res.status(500).json({ error: "Server error" });
+    }
+  });
+
+// Define the GET route to fetch user data
+app.get('/getservicelist', async (req, res) => {
+    try {
+        const dbservicelist = await DBserviceCollModel.find();
+        res.json(dbservicelist)
+    } catch (err)
+    {
+        console.err('error fetching error', err);
+        res.status(500).json({message: 'Error fetching vendors',  error: err})
+    }
+})
+
+
+
+
 
 // Create the user model once
 const DBuserCollModel = mongoose.model('userlist', dbuserlistSchema, 'userlist');
+
+
+
 // Define the GET route to fetch user data
 app.get('/dbuserlist', async (req, res) => {
     try {
@@ -394,6 +479,17 @@ app.get('/dbuserlist', async (req, res) => {
         res.status(500).json({message: 'Error fetching vendors',  error: err})
     }
 })
+
+// Define the GET route to fetch only vendors
+app.get('/dbuserlist', async (req, res) => {
+    try {
+        const vendors = await DBuserCollModel.find({ role: "vendor" }).select("_id nameofuser");
+        res.json(vendors);
+    } catch (err) {
+        console.error('Error fetching vendors:', err);
+        res.status(500).json({ message: 'Error fetching vendors', error: err });
+    }
+});
 
 // **POST API - Create a new user**
 app.post('/pdbuserlist', async (req, res) => {

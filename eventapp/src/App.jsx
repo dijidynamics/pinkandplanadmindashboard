@@ -12,6 +12,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Admindashboard from "./components/Admindashboard";
 import Vendordashboard from "./components/Vendordashboard";
 import Admincategorylist from "./components/Admincategorylist";
+import AddServices from "./components/AddServices";
 
 function App() {
   return (
@@ -60,10 +61,11 @@ function MainLayout() {
           {role === "admin" && (
             <>
             <Route path="/Admindashboard" element={<ProtectedRoute role="admin"><Admindashboard /></ProtectedRoute>}/>
-            <Route path="/vendors" element={<ProtectedRoute role="vendor"><VendorPage /></ProtectedRoute>} />
+               <Route path="/vendors" element={<ProtectedRoute role="vendor"><VendorPage /></ProtectedRoute>} />
               <Route path="/addnewvendor" element={<ProtectedRoute role="admin"><Singupvendor /></ProtectedRoute>} />
               <Route path="/Admincategorylist" element={<ProtectedRoute role="admin"><Admincategorylist /></ProtectedRoute>} />
-              
+              <Route path="/AddServices" element={<ProtectedRoute role="admin"><AddServices /></ProtectedRoute>} />
+        
             </>
           )}
 
