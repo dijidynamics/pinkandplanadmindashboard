@@ -52,14 +52,10 @@ function Mainlogin() {
         <div className="card-header">
           <ul className="nav nav-tabs card-header-tabs justify-content-center" id="myTab" role="tablist">
             <li className="nav-item">
-              <a className="nav-link active" id="one-tab" data-bs-toggle="tab" href="#one" role="tab" aria-controls="one" aria-selected="true" onClick={() => setSelectedRole('customer')}>User</a>
+              <a style={{    backgroundcolor: '#9c27b0'}} className="nav-link active" id="one-tab" data-bs-toggle="tab" href="#one" role="tab" aria-controls="one" aria-selected="true" onClick={() => setSelectedRole('customer')}>Pick & Plan</a>
             </li>
-            <li className="nav-item">
-              <a className="nav-link" id="two-tab" data-bs-toggle="tab" href="#two" role="tab" aria-controls="two" aria-selected="false" onClick={() => setSelectedRole('vendor')}>Vendor</a>
-            </li>
-            <li className="nav-item">
-              <a className="nav-link" id="three-tab" data-bs-toggle="tab" href="#three" role="tab" aria-controls="three" aria-selected="false" onClick={() => setSelectedRole('admin')}>Admin</a>
-            </li>
+         
+    
             
           </ul>
         </div>
