@@ -455,7 +455,7 @@ app.get('/getservicelist', async (req, res) => {
     } catch (err)
     {
         console.err('error fetching error', err);
-        res.status(500).json({message: 'Error fetching vendors',  error: err})
+        res.status(500).json({message: 'Error fetching vendorss',  error: err})
     }
 })
 
