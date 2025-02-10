@@ -7,6 +7,16 @@ function AddServices() {
     const [search, setSearch] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
     const [selectedImages, setSelectedImages] = useState({});
+    const [selectedCategory, setSelectedCategory] = useState({ id: "", name: "" });
+    const [categories, setCategories] = useState([]);
+
+    
+    //states
+    const [states, setStates] = useState([]); // Store state list
+    const [selectedState, setSelectedState] = useState(""); // Track selected state
+    const [districts, setDistricts] = useState([]); // Store filtered districts
+    const [selectedDistrict, setSelectedDistrict] = useState(""); // Track selected district
+
     const [newService, setNewService] = useState({
         serviceuser_id: "",
         servicenameofuser: "",
@@ -14,6 +24,8 @@ function AddServices() {
         servicedescription: "",
         servicepricelist: "",
         serviceimage: [], // Store images as an array
+        categoryid: "",  // Add category ID
+        categoryname: "", // Add category name
     });
 
     // Fetch all users and filter vendors
@@ -32,6 +44,44 @@ function AddServices() {
             .catch((err) => console.error("Error fetching services:", err));
     }, []);
 
+      //categorylist
+
+    // Fetch categories from API
+    useEffect(() => {
+        axios.get("http://147.93.96.202:4001/categorylist/")
+            .then((res) => {
+                setCategories(res.data);
+            })
+            .catch((err) => console.error("Error fetching categories:", err));
+    }, []);
+
+        // Handle category selection
+        const handleCategoryChange = (e) => {
+            const selected = categories.find(cat => cat._id === e.target.value);
+            if (selected) {
+                setSelectedCategory({ id: selected._id, name: selected.categoryname });
+                setNewService(prev => ({
+                    ...prev,
+                    categoryid: selected._id,
+                    categoryname: selected.categoryname,
+                }));
+            }
+        };
+        
+
+    //locationlist
+    useEffect(() => {
+        // Fetch states and districts
+        axios.get("http://localhost:4001/getlocationlist")
+            .then(response => setStates(response.data)) // Store API data
+            .catch(error => console.error("Error fetching locations:", error));
+
+        // Fetch vendors (Example API call)
+        axios.get("http://localhost:4001/getvendors")
+            .then(response => setVendors(response.data))
+            .catch(error => console.error("Error fetching vendors:", error));
+    }, []);
+
     const handleSearch = (e) => {
         setSearch(e.target.value);
     };
@@ -42,6 +92,17 @@ function AddServices() {
         ) 
         : [];
 
+
+    // Handle state selection
+    const handleStateChange = (event) => {
+        const stateId = event.target.value;
+        setSelectedState(stateId);
+
+        // Find the selected state's districts
+        const stateData = states.find(state => state.stateid === stateId);
+        setDistricts(stateData ? stateData.districts : []);
+    };
+
     // Handle input changes
     const handleChange = (e) => {
         setNewService({ ...newService, [e.target.name]: e.target.value });
@@ -50,13 +111,15 @@ function AddServices() {
     const handleVendorChange = (e) => {
         const selectedVendor = vendors.find(vendor => vendor._id === e.target.value);
         if (selectedVendor) {
-            setNewService(prevService => ({
-                ...prevService,
+            console.log("Selected Vendor:", selectedVendor);
+            setNewService(prev => ({
+                ...prev,
                 serviceuser_id: selectedVendor._id,
                 servicenameofuser: selectedVendor.nameofuser,
             }));
         }
     };
+    
 
     const handleImageClick = (serviceId, img) => {
         setSelectedImages((prev) => ({
@@ -88,6 +151,15 @@ function AddServices() {
         formData.append("servicedescription", newService.servicedescription);
         formData.append("servicepricelist", newService.servicepricelist);
 
+        // Add selected State and District to the formData
+        formData.append("categoryid", selectedCategory.id);
+        formData.append("categoryname", selectedCategory.name);
+        formData.append("stateid", selectedState); // Send state
+        formData.append("state", states.find(state => state.stateid === selectedState)?.state);
+        formData.append("districtid", selectedDistrict); // Send district
+        formData.append("district", districts.find(district => district.districtid === selectedDistrict)?.district);
+    
+
         if (Array.isArray(newService.serviceimage)) {
             newService.serviceimage.forEach((file) => {
                 formData.append("serviceimage", file);
@@ -96,6 +168,22 @@ function AddServices() {
             console.error("No valid images selected.");
         }
 
+
+         // ✅ Debugging: Alert user before submitting
+    alert(
+        `Service Details:\n` +
+        `User ID: ${newService.serviceuser_id}\n` +
+        `Service Name: ${newService.servicenameofuser}\n` +
+        `Title: ${newService.servicetitle}\n` +
+        `Description: ${newService.servicedescription}\n` +
+        `Price: ${newService.servicepricelist}\n` +
+        `Category ID: ${selectedCategory.id}\n` +
+        `Category Name: ${selectedCategory.name}\n` +
+        `State ID: ${selectedState}\n` +
+        `State Name: ${states.find(state => state.stateid === selectedState)?.state}\n` +
+        `District ID: ${selectedDistrict}\n` +
+        `District Name: ${districts.find(district => district.districtid === selectedDistrict)?.district}\n`
+    );
         try {
             const response = await axios.post("http://147.93.96.202:4001/addservice", formData, {
                 headers: { "Content-Type": "multipart/form-data" }
@@ -114,13 +202,21 @@ function AddServices() {
     servicedescription: "",
     servicepricelist: "",
     serviceimage: [],
+
 });
+setSelectedState(""); // Reset selected state
+setDistricts([]); // Reset selected district
 
         } catch (err) {
             console.error("Error adding service:", err);
             alert("Something went wrong.");
         }
     };
+
+    const handleDistrictChange = (event) => {
+        setSelectedDistrict(event.target.value);
+    };
+    
 
     return (
         <div className="container mt-4">
@@ -143,8 +239,8 @@ function AddServices() {
   return (
     <div key={service._id} className="col-md-4 mb-3">
       <div className="card p-2">
-        <p className="fw-bold">{service.servicenameofuser}</p>
-
+        <span className="fw-bold">{service.servicenameofuser}</span>
+        <p style={{fontWeight:'normal', fontSize:'12px'}}>{service.categoryname}</p>
         {/* Main Image */}
         <img
           src={selectedImage}
@@ -156,6 +252,8 @@ function AddServices() {
         <div className="card-body">
           <h5 className="card-title">{service.servicetitle}</h5>
           <p className="card-text">{service.servicedescription}</p>
+          
+         
           <p className="fw-bold">Price: {service.servicepricelist}</p>
 
           {/* Show All Images Below */}
@@ -185,11 +283,35 @@ function AddServices() {
                     <form onSubmit={handleSubmit}>
                         <label>Select Vendor</label>
                         <select className="form-control" onChange={handleVendorChange} required>
-                            <option value="">Select Vendor</option>
-                            {vendors.map((vendor) => (
-                                <option key={vendor._id} value={vendor._id}>{vendor.nameofuser}</option>
-                            ))}
-                        </select>
+    <option value="">Select Vendor</option>
+    {vendors.length > 0 ? (
+        vendors.map((vendor) => (
+            <option key={vendor._id} value={vendor._id}>{vendor.nameofuser}</option>
+        ))
+    ) : (
+        <option disabled>Loading vendors...</option>
+    )}
+</select>
+                       
+
+{/* Other Input Fields */}
+<div style={{ marginBottom: '5px' }}>
+                        <label>Select Category</label>
+        
+                        <select className="form-control" onChange={handleCategoryChange} required>
+    <option value="">Select Category</option>
+    {categories.length > 0 ? (
+        categories.map((category) => (
+            <option key={category._id} value={category._id}>{category.categoryname}</option>
+        ))
+    ) : (
+        <option disabled>Loading categories...</option>
+    )}
+</select>
+
+
+
+            </div>
                         {/* Other Input Fields */}
                         <div style={{ marginBottom: '5px' }}>
   <input 
@@ -215,6 +337,27 @@ function AddServices() {
     required 
     rows="4"
   />
+</div>
+
+<div style={{ marginBottom: '5px' }}>
+       {/* Select State */}
+       <label className="mt-2">Select State</label>
+                <select className="form-control" onChange={handleStateChange} required>
+                    <option value="">Select State</option>
+                    {states.map((state) => (
+                        <option key={state.stateid} value={state.stateid}>{state.state}</option>
+                    ))}
+                </select>
+
+                {/* Select District (updates dynamically) */}
+                <label className="mt-2">Select District</label>
+                <select className="form-control" onChange={handleDistrictChange} required>
+    <option value="">Select District</option>
+    {districts.map((district) => (
+        <option key={district.districtid} value={district.districtid}>{district.district}</option>
+    ))}
+</select>
+
 </div>
 
 <div style={{ marginBottom: '5px' }}>

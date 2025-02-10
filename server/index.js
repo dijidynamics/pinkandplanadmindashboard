@@ -137,6 +137,8 @@ app.post("/addservice", upload.array("serviceimage", 3), async (req, res) => {
             servicedescription,
             servicepricelist,
             serviceimage,
+            categoryid,
+            categoryname
         });
 
         await newService.save();
@@ -416,6 +418,12 @@ const dbservieSchema = new mongoose.Schema({
     servicedescription: { type: String, required: true },
     servicepricelist: { type: String, required: true },
     serviceimage: { type: [String], required: true }, // Array of image URLs
+    categoryid: { type: [String], required: true },
+    categoryname: { type: [String], required: true },
+    stateid: { type: [String], required: true },
+    state: { type: [String], required: true },
+    districtid: { type: [String], required: true },
+    district: { type: [String], required: true }
 });
 
 // Create the user model once for service
@@ -425,27 +433,37 @@ const DBserviceCollModel = mongoose.model('serviceslist', dbservieSchema, 'servi
 // Add a New Service - Using `app.post()`
 app.post("/addservice", async (req, res) => {
     try {
-      const { serviceuser_id, servicenameofuser, servicetitle, servicedescription, servicepricelist, serviceimage } = req.body;
-  
-      if (!serviceuser_id || !servicenameofuser || !servicetitle || !servicedescription || !servicepricelist || !serviceimage) {
-        return res.status(400).json({ error: "All fields are required" });
-      }
-  
-      const newService = new DBserviceCollModel({
-        serviceuser_id,
-        servicenameofuser,
-        servicetitle,
-        servicedescription,
-        servicepricelist,
-        serviceimage: Array.isArray(serviceimage) ? serviceimage : serviceimage.split(","), // Convert string to array if needed
-      });
-  
-      await newService.save();
-      res.status(201).json(newService);
+        console.log("Received Data:", req.body); // Debugging line
+        const { serviceuser_id, servicenameofuser, servicetitle, servicedescription, servicepricelist, serviceimage,
+            categoryid, categoryname, stateid, state, districtid, district } = req.body;
+
+        if (!serviceuser_id || !servicenameofuser || !servicetitle || !servicedescription || !servicepricelist || !serviceimage) {
+            return res.status(400).json({ error: "All fields are required" });
+        }
+
+        const newService = new DBserviceCollModel({
+            serviceuser_id,
+            servicenameofuser,
+            servicetitle,
+            servicedescription,
+            servicepricelist,
+            serviceimage: Array.isArray(serviceimage) ? serviceimage : serviceimage.split(","), 
+            categoryid,
+            categoryname,
+            stateid, 
+            state,
+            districtid,
+            district
+        });
+
+        await newService.save();
+        res.status(201).json(newService);
     } catch (error) {
-      res.status(500).json({ error: "Server error" });
+        console.error("Server error:", error);
+        res.status(500).json({ error: "Server error" });
     }
-  });
+});
+
 
 // Define the GET route to fetch user data
 app.get('/getservicelist', async (req, res) => {
@@ -459,6 +477,30 @@ app.get('/getservicelist', async (req, res) => {
     }
 })
 
+
+
+//define the schema for the service collection
+const dblocationSchema = new mongoose.Schema({
+    stateid: { type: String, required: true, unique: true }, // Unique ID for state
+    state: { type: String, required: true }, // State name
+    districtid: { type: String, required: true, unique: true }, // Unique ID for district
+    district: { type: String, required: true } // District name
+});
+
+// Create the user model once for service
+const DBlocationCollModel = mongoose.model('locationlist', dblocationSchema, 'locationlist');
+
+// Define the GET route to fetch user data
+app.get('/getlocationlist', async (req, res) => {
+    try {
+        const dbservicelist = await DBlocationCollModel.find();
+        res.json(dbservicelist)
+    } catch (err)
+    {
+        console.err('error fetching error', err);
+        res.status(500).json({message: 'Error fetching vendorss',  error: err})
+    }
+})
 
 
 
