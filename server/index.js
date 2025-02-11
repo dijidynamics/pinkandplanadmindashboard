@@ -131,7 +131,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 // Set up static folder to serve files from the 'uploads' directory
-const upload = multer({ storage,  fileFilter});
+const upload = multer({ storage});
 
 //api to upload addservice 
 app.post("/addservice", upload.array("serviceimage", 3), async (req, res) => {
@@ -524,10 +524,13 @@ const ServiceListModel = mongoose.model("servicelistsone", ServiceListSchema);
 
 // API to Add a New Service
 
-app.post("/addservicelistnew", upload.none(), async (req, res) => {
+
+
+
+app.post("/addservicelistnew", upload.array("serviceImages", 10), async (req, res) => {
     try {
-        console.log("Received FormData:", req.body); // Debugging: Check what is being received
-        console.log("Received Files:", req.files); // Check uploaded files 
+        console.log("Received FormData:", req.body); // ✅ Debugging: Check received data
+        console.log("Received Files:", req.files); // ✅ Check uploaded files
 
         const { 
             serviceuser_id, 
@@ -539,8 +542,8 @@ app.post("/addservicelistnew", upload.none(), async (req, res) => {
             categoryname,
             stateid,
             statename,
-           districtid,
-           districtname,
+            districtid,
+            districtname
         } = req.body;
 
         // Validate required fields
@@ -548,8 +551,8 @@ app.post("/addservicelistnew", upload.none(), async (req, res) => {
             return res.status(400).json({ error: "serviceuser_id, servicenameofuser, and servicetitle are required" });
         }
 
-          // Save image paths
-          const serviceImages = req.files.map(file => `/uploads/${file.filename}`);
+        // ✅ Ensure `req.files` exists before mapping
+        const serviceImages = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
 
         // Insert into MongoDB
         const newService = new ServiceListModel({
@@ -562,9 +565,9 @@ app.post("/addservicelistnew", upload.none(), async (req, res) => {
             categoryname,
             stateid,
             statename,
-           districtid,
-           districtname,
-           serviceImages, // Save image URLs
+            districtid,
+            districtname,
+            serviceImages // ✅ Save image paths
         });
 
         await newService.save();
@@ -575,7 +578,6 @@ app.post("/addservicelistnew", upload.none(), async (req, res) => {
         res.status(500).json({ error: "Server error", details: err.message });
     }
 });
-
 
 app.post("/addservicelistnews", async (req, res) => {
     try {
