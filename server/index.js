@@ -525,12 +525,12 @@ const ServiceListModel = mongoose.model("servicelistsone", ServiceListSchema);
 // API to Add a New Service
 
 
+//9:56 9m - 11feb2025
 
-
-app.post("/addservicelistnew", upload.array("serviceImages", 10), async (req, res) => {
+app.post("/addservicelistnewb", upload.array("serviceImages", 10), async (req, res) => {
     try {
-        console.log("Received FormData:", req.body); // ✅ Debugging: Check received data
-        console.log("Received Files:", req.files); // ✅ Check uploaded files
+        console.log("Received FormData:", req.body);
+        console.log("Received Files:", req.files); // Debugging
 
         const { 
             serviceuser_id, 
@@ -546,15 +546,15 @@ app.post("/addservicelistnew", upload.array("serviceImages", 10), async (req, re
             districtname
         } = req.body;
 
-        // Validate required fields
         if (!serviceuser_id?.trim() || !servicenameofuser?.trim() || !servicetitle?.trim()) {
             return res.status(400).json({ error: "serviceuser_id, servicenameofuser, and servicetitle are required" });
         }
 
-        // ✅ Ensure `req.files` exists before mapping
-        const serviceImages = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+        // ✅ Check if req.files exists before using .map()
+        const serviceImages = req.files && req.files.length > 0 
+            ? req.files.map(file => `/uploads/${file.filename}`)
+            : []; // If no files, store an empty array
 
-        // Insert into MongoDB
         const newService = new ServiceListModel({
             serviceuser_id,
             servicenameofuser,
@@ -567,7 +567,7 @@ app.post("/addservicelistnew", upload.array("serviceImages", 10), async (req, re
             statename,
             districtid,
             districtname,
-            serviceImages // ✅ Save image paths
+            serviceImages
         });
 
         await newService.save();
@@ -578,6 +578,61 @@ app.post("/addservicelistnew", upload.array("serviceImages", 10), async (req, re
         res.status(500).json({ error: "Server error", details: err.message });
     }
 });
+
+app.post("/addservicelistnew", upload.array("serviceImages", 10), async (req, res) => {
+    try {
+        console.log("Received FormData:", req.body);
+        console.log("Received Files:", req.files); // Debugging
+
+        const { 
+            serviceuser_id, 
+            servicenameofuser, 
+            servicetitle, 
+            servicedescription, 
+            servicepricelist,
+            categoryid,
+            categoryname,
+            stateid,
+            statename,
+            districtid,
+            districtname
+        } = req.body;
+
+        if (!serviceuser_id?.trim() || !servicenameofuser?.trim() || !servicetitle?.trim()) {
+            return res.status(400).json({ error: "serviceuser_id, servicenameofuser, and servicetitle are required" });
+        }
+
+        // ✅ Ensure req.files exists before calling .map()
+        const serviceImages = req.files && req.files.length > 0 
+            ? req.files.map(file => `/uploads/${file.filename}`)
+            : []; // If no files, store an empty array
+
+        console.log("Processed Service Images:", serviceImages); // Debugging
+
+        const newService = new ServiceListModel({
+            serviceuser_id,
+            servicenameofuser,
+            servicetitle,
+            servicedescription,
+            servicepricelist,
+            categoryid,
+            categoryname,
+            stateid,
+            statename,
+            districtid,
+            districtname,
+            serviceImages
+        });
+
+        await newService.save();
+        res.status(201).json({ message: "Service added successfully", newService });
+
+    } catch (err) {
+        console.error("Error adding service:", err);
+        res.status(500).json({ error: "Server error", details: err.message });
+    }
+});
+
 
 app.post("/addservicelistnews", async (req, res) => {
     try {
