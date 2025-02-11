@@ -103,20 +103,35 @@ mongoose.connection.on('connected', async () => {
 
 
 
-// Define storage for uploaded images
+
 // Multer Storage Configuration
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/'); // Save images in "uploads" folder
-    },
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
-    }
-});
+
 
 // Set up static folder to serve files from the 'uploads' directory
-const upload = multer({ storage });
+//const upload = multer({ storage });
 
+// Set up storage
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "uploads/"); // Ensure 'uploads/' folder exists in your project
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Rename file with timestamp
+    },
+});
+
+
+// File filter to allow only images
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+        cb(null, true);
+    } else {
+        cb(new Error("Only images are allowed"), false);
+    }
+};
+
+// Set up static folder to serve files from the 'uploads' directory
+const upload = multer({ storage,  fileFilter});
 
 //api to upload addservice 
 app.post("/addservice", upload.array("serviceimage", 3), async (req, res) => {
@@ -430,39 +445,151 @@ const dbservieSchema = new mongoose.Schema({
 const DBserviceCollModel = mongoose.model('serviceslist', dbservieSchema, 'serviceslist');
 
 
-// Add a New Service - Using `app.post()`
-app.post("/addservice", async (req, res) => {
+app.post("/addservicelist", async (req, res) => {
     try {
-        console.log("Received Data:", req.body); // Debugging line
-        const { serviceuser_id, servicenameofuser, servicetitle, servicedescription, servicepricelist, serviceimage,
-            categoryid, categoryname, stateid, state, districtid, district } = req.body;
+        const { 
+            serviceuser_id, 
+            servicenameofuser, 
+            servicetitle, 
+            servicedescription = "No description provided",  // Default value
+            servicepricelist = "0" // Default price
+        } = req.body;
 
-        if (!serviceuser_id || !servicenameofuser || !servicetitle || !servicedescription || !servicepricelist || !serviceimage) {
-            return res.status(400).json({ error: "All fields are required" });
+        // Validate required fields
+        if (!serviceuser_id || !servicenameofuser || !servicetitle) {
+            return res.status(400).json({ error: "serviceuser_id, servicenameofuser, and servicetitle are required" });
         }
 
+        // Save to database
         const newService = new DBserviceCollModel({
             serviceuser_id,
             servicenameofuser,
             servicetitle,
             servicedescription,
-            servicepricelist,
-            serviceimage: Array.isArray(serviceimage) ? serviceimage : serviceimage.split(","), 
-            categoryid,
-            categoryname,
-            stateid, 
-            state,
-            districtid,
-            district
+            servicepricelist
         });
 
         await newService.save();
-        res.status(201).json(newService);
-    } catch (error) {
-        console.error("Server error:", error);
-        res.status(500).json({ error: "Server error" });
+        res.status(201).json({ message: "Service added successfully", newService });
+
+    } catch (err) {
+        console.error("Error adding service:", err);
+        res.status(500).json({ error: "Server error", details: err.message });
     }
 });
+
+
+
+// Define Schema
+const ServiceListSchema = new mongoose.Schema({
+    serviceuser_id: { type: String, required: true },
+    servicenameofuser: { type: String, required: true },
+    servicetitle: { type: String, required: true },
+    servicedescription: { type: String, default: "No description provided" },
+    servicepricelist: { type: String, default: "0" },
+    categoryid: { type: String, required: true },
+    categoryname: { type: String, required: true },
+    stateid: { type: String, required: true },
+    statename: { type: String, required: true },
+   districtid: { type: String, required: true },
+   districtname: { type: String, required: true },
+   serviceImages: [{ type: String }] // Array to store image URLs
+}, { timestamps: true });  // Adds createdAt and updatedAt fields automatically
+
+// Create Model (Collection name will be "servicelists" in MongoDB)
+const ServiceListModel = mongoose.model("servicelistsone", ServiceListSchema);
+
+// API to Add a New Service
+
+app.post("/addservicelistnew", upload.none(), async (req, res) => {
+    try {
+        console.log("Received FormData:", req.body); // Debugging: Check what is being received
+        console.log("Received Files:", req.files); // Check uploaded files 
+
+        const { 
+            serviceuser_id, 
+            servicenameofuser, 
+            servicetitle, 
+            servicedescription, 
+            servicepricelist,
+            categoryid,
+            categoryname,
+            stateid,
+            statename,
+           districtid,
+           districtname,
+        } = req.body;
+
+        // Validate required fields
+        if (!serviceuser_id?.trim() || !servicenameofuser?.trim() || !servicetitle?.trim()) {
+            return res.status(400).json({ error: "serviceuser_id, servicenameofuser, and servicetitle are required" });
+        }
+
+          // Save image paths
+          const serviceImages = req.files.map(file => `/uploads/${file.filename}`);
+
+        // Insert into MongoDB
+        const newService = new ServiceListModel({
+            serviceuser_id,
+            servicenameofuser,
+            servicetitle,
+            servicedescription,
+            servicepricelist,
+            categoryid,
+            categoryname,
+            stateid,
+            statename,
+           districtid,
+           districtname,
+           serviceImages, // Save image URLs
+        });
+
+        await newService.save();
+        res.status(201).json({ message: "Service added successfully", newService });
+
+    } catch (err) {
+        console.error("Error adding service:", err);
+        res.status(500).json({ error: "Server error", details: err.message });
+    }
+});
+
+
+app.post("/addservicelistnews", async (req, res) => {
+    try {
+        const { 
+            serviceuser_id ="12345", 
+            servicenameofuser = "34343",
+            servicetitle ="test",
+            servicedescription = "No description provided",
+            servicepricelist = "0"
+        } = req.body;
+
+        // Validate required fields & avoid empty strings
+        if (!serviceuser_id?.trim() || !servicenameofuser?.trim() || !servicetitle?.trim()) {
+            return res.status(400).json({ error: "serviceuser_id, servicenameofuser, and servicetitle are required" });
+        }
+
+        // Insert into MongoDB
+        const newService = new ServiceListModel({
+            serviceuser_id,
+            servicenameofuser,
+            servicetitle,
+            servicedescription,
+            servicepricelist
+        });
+
+        await newService.save();
+        res.status(201).json({ message: "Service added successfully", newService });
+
+    } catch (err) {
+        console.error("Error adding service:", err);
+        res.status(500).json({ error: "Server error", details: err.message });
+    }
+});
+
+
+
+
 
 
 // Define the GET route to fetch user data

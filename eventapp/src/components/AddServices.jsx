@@ -9,8 +9,9 @@ function AddServices() {
     const [selectedImages, setSelectedImages] = useState({});
     const [selectedCategory, setSelectedCategory] = useState({ id: "", name: "" });
     const [categories, setCategories] = useState([]);
+    const [imagePreviews, setImagePreviews] = useState([]); // Store image previews
+    const [images, setImages] = useState([]);
 
-    
     //states
     const [states, setStates] = useState([]); // Store state list
     const [selectedState, setSelectedState] = useState(""); // Track selected state
@@ -72,14 +73,14 @@ function AddServices() {
     //locationlist
     useEffect(() => {
         // Fetch states and districts
-        axios.get("http://localhost:4001/getlocationlist")
+        axios.get("http://147.93.96.202:4001/getlocationlist")
             .then(response => setStates(response.data)) // Store API data
             .catch(error => console.error("Error fetching locations:", error));
 
         // Fetch vendors (Example API call)
-        axios.get("http://localhost:4001/getvendors")
-            .then(response => setVendors(response.data))
-            .catch(error => console.error("Error fetching vendors:", error));
+       // axios.get("http://localhost:4001/getvendors")
+       //     .then(response => setVendors(response.data))
+        //    .catch(error => console.error("Error fetching vendors:", error));
     }, []);
 
     const handleSearch = (e) => {
@@ -96,12 +97,21 @@ function AddServices() {
     // Handle state selection
     const handleStateChange = (event) => {
         const stateId = event.target.value;
-        setSelectedState(stateId);
-
-        // Find the selected state's districts
         const stateData = states.find(state => state.stateid === stateId);
-        setDistricts(stateData ? stateData.districts : []);
+        
+        if (stateData) {
+            setSelectedState(stateId);
+            setNewService(prev => ({
+                ...prev,
+                stateid: stateData.stateid, 
+                statename: stateData.state // Store state name
+            }));
+    
+            // Set districts based on selected state
+            setDistricts(stateData.districts || []);
+        }
     };
+    
 
     // Handle input changes
     const handleChange = (e) => {
@@ -131,91 +141,188 @@ function AddServices() {
 
     // Handle Service Image Upload
     const handleImageChange = (e) => {
-        if (e.target.files.length > 3) {
+        const files = e.target.files;
+        
+        // Limit the number of images (up to 3)
+        if (files.length > 3) {
             alert("You can only upload up to 3 images.");
             return;
         }
+    
+        // Create file previews
+        const previews = Array.from(files).map(file => URL.createObjectURL(file));
+        setImagePreviews(previews); // Update previews state
+    
+        // Update the newService state with the selected files (for submission)
         setNewService((prevService) => ({
             ...prevService,
-            serviceimage: Array.from(e.target.files),
+            serviceimage: Array.from(files), // Store File objects for submission
         }));
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
 
+
+    const handleSubmitlists = async (e) => {
+        e.preventDefault();
+    
+  
+        if (!newService.serviceuser_id || !newService.servicenameofuser) {
+            alert("Please select a vendor.");
+            return;
+        }
+        
+        if (!newService.categoryid) {
+            alert("Please select a category.");
+            return;
+        }
+    
+        if (!selectedState || !selectedDistrict) {
+            alert("Please select a state and district.");
+            return;
+        } if (!newService.stateid || !newService.districtid) {
+            alert("Please select a state and district.");
+            return;
+        }
+    
         const formData = new FormData();
         formData.append("serviceuser_id", newService.serviceuser_id);
         formData.append("servicenameofuser", newService.servicenameofuser);
         formData.append("servicetitle", newService.servicetitle);
         formData.append("servicedescription", newService.servicedescription);
         formData.append("servicepricelist", newService.servicepricelist);
-
-        // Add selected State and District to the formData
-        formData.append("categoryid", selectedCategory.id);
-        formData.append("categoryname", selectedCategory.name);
-        formData.append("stateid", selectedState); // Send state
-        formData.append("state", states.find(state => state.stateid === selectedState)?.state);
-        formData.append("districtid", selectedDistrict); // Send district
-        formData.append("district", districts.find(district => district.districtid === selectedDistrict)?.district);
+       // formData.append("categoryid", newService.categoryid);
+       // formData.append("categoryname", newService.categoryname);
+      //  formData.append("stateid", selectedState);
+      //  formData.append("districtid", selectedDistrict);
     
-
-        if (Array.isArray(newService.serviceimage)) {
+        // Append images
+        if (newService.serviceimage.length > 0) {
             newService.serviceimage.forEach((file) => {
-                formData.append("serviceimage", file);
+                formData.append("serviceimage", file); // Multiple images
             });
-        } else {
-            console.error("No valid images selected.");
         }
-
-
-         // ✅ Debugging: Alert user before submitting
-    alert(
-        `Service Details:\n` +
-        `User ID: ${newService.serviceuser_id}\n` +
-        `Service Name: ${newService.servicenameofuser}\n` +
-        `Title: ${newService.servicetitle}\n` +
-        `Description: ${newService.servicedescription}\n` +
-        `Price: ${newService.servicepricelist}\n` +
-        `Category ID: ${selectedCategory.id}\n` +
-        `Category Name: ${selectedCategory.name}\n` +
-        `State ID: ${selectedState}\n` +
-        `State Name: ${states.find(state => state.stateid === selectedState)?.state}\n` +
-        `District ID: ${selectedDistrict}\n` +
-        `District Name: ${districts.find(district => district.districtid === selectedDistrict)?.district}\n`
-    );
+    
         try {
-            const response = await axios.post("http://147.93.96.202:4001/addservice", formData, {
-                headers: { "Content-Type": "multipart/form-data" }
-            });
-
+            const response = await axios.post(
+                "http://localhost:4001/addservicelistnew",
+                formData,
+                { headers: { "Content-Type": "multipart/form-data" } }
+            );
+    
+            alert(response.data.message);
             console.log("Service added:", response.data);
-            alert("Service added successfully!");
-
-             // ✅ Step 1: Update the UI without refreshing the page
-        setServices((prevServices) => [...prevServices, response.data]);
-  // ✅ Step 2: Reset form fields
-  setNewService({
-    serviceuser_id: "",
-    servicenameofuser: "",
-    servicetitle: "",
-    servicedescription: "",
-    servicepricelist: "",
-    serviceimage: [],
-
-});
-setSelectedState(""); // Reset selected state
-setDistricts([]); // Reset selected district
-
         } catch (err) {
             console.error("Error adding service:", err);
-            alert("Something went wrong.");
+            alert("Something went wrong. Please try again.");
         }
     };
 
-    const handleDistrictChange = (event) => {
-        setSelectedDistrict(event.target.value);
+    
+    const handleSubmitlist = async (e) => {
+        e.preventDefault();
+    
+        if (!newService.serviceuser_id || !newService.servicenameofuser) {
+            alert("Please select a vendor.");
+            return;
+        }
+
+        if (!newService.stateid || !newService.districtid) {
+            alert("Please select a state and district.");
+            return;
+        }
+        if (!newService.categoryid) {
+            alert("Please select a category.");
+            return;
+        }
+    
+
+    
+        const formData = new FormData();
+        formData.append("serviceuser_id", newService.serviceuser_id);
+        formData.append("servicenameofuser", newService.servicenameofuser);
+        formData.append("servicetitle", newService.servicetitle);
+        formData.append("servicedescription", newService.servicedescription);
+        formData.append("servicepricelist", newService.servicepricelist);
+        formData.append("categoryid", newService.categoryid);
+        formData.append("categoryname", newService.categoryname);
+        formData.append("stateid", newService.stateid);
+        formData.append("statename", newService.statename);
+        formData.append("districtid", newService.districtid);
+        formData.append("districtname", newService.districtname);
+
+            // ✅ Append selected images (if any)
+    if (images.length > 0) {
+        images.forEach((image) => {
+            formData.append("serviceImages", image);
+        });
+    }
+
+
+        try {
+            const response = await axios.post(
+                "http://localhost:4001/addservicelistnew",
+                formData,
+                { headers: { "Content-Type": "multipart/form-data" } }
+            );
+    
+            alert(response.data.message);
+            console.log("Service added:", response.data);
+        } catch (err) {
+            console.error("Error adding service:", err);
+            alert("Something went wrong. Please try again.");
+        }
     };
+    
+    
+    
+{/* 
+    const handleSubmitlist = async (e) => {
+        e.preventDefault();
+    
+        
+        const testService = {
+            serviceuser_id: "67a616c25c00fd8353c65281",  
+            servicenameofuser: "KL Event",               
+            servicetitle: "Test Wedding Package",       
+            servicedescription: "Test description for wedding catering service.",
+            servicepricelist: "200 MYR",               
+            serviceimage: [                             
+                "http://147.93.96.202:4001/uploads/test1.jpg",
+                "http://147.93.96.202:4001/uploads/test2.jpg"
+            ]
+        };
+    
+        try {
+            const response = await axios.post("http://localhost:4001/addservicelistnew", testService);
+            
+            alert(response.data.message);
+            console.log("Service added:", response.data);
+    
+        
+            setServices((prevServices) => [...prevServices, response.data]);
+    
+        } catch (err) {
+            console.error("Error adding service:", err);
+            alert("Something went wrong. Please try again.");
+        }
+    }; */}
+    
+    
+    
+    const handleDistrictChange = (event) => {
+        const districtId = event.target.value;
+        const districtData = districts.find(district => district.districtid === districtId);
+    
+        if (districtData) {
+            setSelectedDistrict(districtId);
+            setNewService(prev => ({
+                ...prev,
+                districtid: districtData.districtid, 
+                districtname: districtData.district // Store district name
+            }));
+        }
+    };
+    
     
 
     return (
@@ -280,7 +387,7 @@ setDistricts([]); // Reset selected district
                 {/* Add New Service Form */}
                 <div className="col-md-4">
                     <h3>Add New Service</h3>
-                    <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmitlist}>
                         <label>Select Vendor</label>
                         <select className="form-control" onChange={handleVendorChange} required>
     <option value="">Select Vendor</option>
@@ -372,8 +479,29 @@ setDistricts([]); // Reset selected district
   />
 </div>
 
+<div style={{ marginBottom: '5px' }}>
+    <label>Upload Images</label>
+    <input
+        type="file"
+        className="form-control mt-2"
+        multiple
+        accept="image/*"
+        onChange={handleImageChange}
+        required    />
+    {/* Show image previews */}
+    <div className="image-previews mt-2">
+        {imagePreviews.map((preview, index) => (
+            <img
+                key={index}
+                src={preview}
+                alt={`Preview ${index + 1}`}
+                className="img-thumbnail"
+                style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+            />
+        ))}
+    </div>
+</div>
 
-                        <input type="file" className="form-control mt-2" multiple accept="image/*" onChange={handleImageChange} required />
                         <button type="submit" className="btn btn-primary mt-3">Add Service</button>
                     </form>
                 </div>
