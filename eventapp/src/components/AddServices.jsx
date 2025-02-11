@@ -260,7 +260,7 @@ function AddServices() {
 
         try {
             const response = await axios.post(
-                "http://localhost:4001/addservicelistnew",
+                "http://147.93.96.202:4001/addservicelistnew",
                 formData,
                 { headers: { "Content-Type": "multipart/form-data" } }
             );
