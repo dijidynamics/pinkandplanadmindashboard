@@ -136,12 +136,28 @@ const upload = multer({ storage,  fileFilter});
 //api to upload addservice 
 app.post("/addservice", upload.array("serviceimage", 3), async (req, res) => {
     try {
-        const { serviceuser_id, servicenameofuser, servicetitle, servicedescription, servicepricelist } = req.body;
 
-        if (!serviceuser_id || !servicenameofuser || !servicetitle || !servicedescription || !servicepricelist) {
-            return res.status(400).json({ error: "All fields are required" });
-        }
+        console.log("Received FormData:", req.body);
+        console.log("Received Files:", req.files);
 
+        const { 
+            serviceuser_id, 
+            servicenameofuser, 
+            servicetitle, 
+            servicedescription, 
+            servicepricelist,
+            categoryid,
+            categoryname,
+            stateid,
+            statename,
+            districtid,
+            districtname
+        } = req.body;
+
+      // Validate required fields
+      if (!serviceuser_id?.trim() || !servicenameofuser?.trim() || !servicetitle?.trim()) {
+        return res.status(400).json({ error: "serviceuser_id, servicenameofuser, and servicetitle are required" });
+    }
         // Construct image URLs
         const serviceimage = req.files.map(file => `http://147.93.96.202:4001/uploads/${file.filename}`);
 
@@ -466,7 +482,14 @@ app.post("/addservicelist", async (req, res) => {
             servicenameofuser,
             servicetitle,
             servicedescription,
-            servicepricelist
+            servicepricelist,
+            categoryid,
+            categoryname,
+            stateid,
+            statename,
+            districtid,
+            districtname,
+            serviceImages, // Save image paths
         });
 
         await newService.save();
@@ -604,7 +627,17 @@ app.get('/getservicelist', async (req, res) => {
     }
 })
 
-
+// Define the GET route to fetch user data
+app.get('/getservicelistrest', async (req, res) => {
+    try {
+        const dbservicelist = await DBserviceCollModel.find();
+        res.json(dbservicelist)
+    } catch (err)
+    {
+        console.err('error fetching error', err);
+        res.status(500).json({message: 'Error fetching vendorss',  error: err})
+    }
+})
 
 //define the schema for the service collection
 const dblocationSchema = new mongoose.Schema({
